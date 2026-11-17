@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Upgrade plan to migrate project to Java 21 while keeping Spring Boot 2.7.18",
+  "tasks": [
+    {
+      "type": "upgrade",
+      "id": "001-upgrade-java-21",
+      "description": "Upgrade JDK to Java 21",
+      "reason": "User explicitly requested upgrading to Java 21 while keeping Spring Boot at version 2.7.18 and without deploying to Azure.",
+      "requirements": "Upgrade the JDK/Java language level to 21 across build configuration (e.g., pom.xml/build.gradle source/target/release settings), CI configuration, and any JDK version references. Do not upgrade Spring Boot, Spring Framework, or perform any javax.* to jakarta.* migration. Keep Spring Boot at 2.7.18. Do not containerize or deploy to Azure.",
+      "environmentConfiguration": null,
+      "skills": [
+        {
+          "name": "java-version-upgrade",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      },
+      "status": "success",
+      "summary": "Upgraded JDK/Java language level to 21 in pom.xml (java.version, maven.compiler.source/target) and Dockerfile base images (maven:3.9-eclipse-temurin-21, eclipse-temurin:21-jre). Spring Boot kept at 2.7.18; no javax-\u003Ejakarta migration performed. No CI workflows existed to update. Build verified with mvnw clean verify: BUILD SUCCESS. No src/test directory exists so no unit tests ran.",
+      "successCriteriaStatus": {
+        "passBuild": "true",
+        "generateNewUnitTests": false,
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "upgrade-to-lts-20261117100149",
+    "projectName": "application",
+    "language": "java",
+    "createdAt": "2026-11-17T19:02:09.837Z",
+    "version": "1.0"
+  }
+}
