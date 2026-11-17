@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "japaneast"
+    },
+    "appName": {
+      "value": "supplychain-backend"
+    },
+    "environmentName": {
+      "value": "dev"
+    },
+    "appServicePlanSku": {
+      "value": "B1"
+    },
+    "appServicePlanCapacity": {
+      "value": 1
+    },
+    "mysqlConnectionString": {
+      "value": ""
+    },
+    "mysqlUsername": {
+      "value": ""
+    },
+    "mysqlPassword": {
+      "value": ""
+    },
+    "rabbitMqHost": {
+      "value": ""
+    },
+    "rabbitMqPort": {
+      "value": "5672"
+    },
+    "rabbitMqUsername": {
+      "value": ""
+    },
+    "rabbitMqPassword": {
+      "value": ""
+    }
+  }
+}
