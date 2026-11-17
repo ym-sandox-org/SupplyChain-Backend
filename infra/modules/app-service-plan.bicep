@@ -1,39 +1,35 @@
-// =============================================================================
-// modules/app-service-plan.bicep
-// Single resource: App Service Plan (Linux)
-// =============================================================================
+// Module: App Service Plan (Linux)
+// Hosts the SupplyChain Backend Web App. No database or messaging resources
+// are created here — MySQL and RabbitMQ are external dependencies (see README.md).
 
-@description('Name of the App Service Plan.')
-param name string
+@description('Name of the App Service Plan')
+param appServicePlanName string
 
-@description('Azure region.')
+@description('Azure region for the App Service Plan')
 param location string
 
-@description('SKU name, e.g. B1 for a demo/review workload.')
-param skuName string
+@description('App Service Plan SKU (e.g. P1v3, B1, S1)')
+param skuName string = 'P1v3'
 
-@description('SKU tier, e.g. Basic.')
-param skuTier string
+@description('Number of worker instances')
+param capacity int = 1
 
-@description('Tags to apply.')
+@description('Tags to apply to the resource')
 param tags object = {}
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' = {
-  name: name
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
+  name: appServicePlanName
   location: location
   tags: tags
+  kind: 'linux'
   sku: {
     name: skuName
-    tier: skuTier
+    capacity: capacity
   }
-  kind: 'linux'
   properties: {
     reserved: true // required for Linux plans
   }
 }
 
-@description('Resource ID of the App Service Plan.')
 output id string = appServicePlan.id
-
-@description('Name of the App Service Plan.')
 output name string = appServicePlan.name

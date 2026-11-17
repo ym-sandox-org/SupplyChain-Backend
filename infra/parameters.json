@@ -5,30 +5,38 @@
     "location": {
       "value": "japaneast"
     },
-    "baseName": {
-      "value": "supplychain-backend-demo"
+    "appName": {
+      "value": "supplychain-backend"
     },
-    "appServicePlanSkuName": {
-      "value": "B1"
+    "environmentName": {
+      "value": "dev"
     },
-    "appServicePlanSkuTier": {
-      "value": "Basic"
+    "appServicePlanSku": {
+      "value": "P1v3"
     },
-    "javaVersion": {
-      "value": "21"
+    "appServicePlanCapacity": {
+      "value": 1
     },
-    "javaServer": {
-      "value": "JAVA"
+    "mysqlConnectionString": {
+      "value": ""
     },
-    "javaServerVersion": {
-      "value": "SE"
+    "mysqlUsername": {
+      "value": ""
     },
-    "tags": {
-      "value": {
-        "environment": "demo",
-        "workload": "supplychain-backend",
-        "provisionedBy": "bicep"
-      }
+    "mysqlPassword": {
+      "value": ""
+    },
+    "rabbitMqHost": {
+      "value": ""
+    },
+    "rabbitMqPort": {
+      "value": "5672"
+    },
+    "rabbitMqUsername": {
+      "value": ""
+    },
+    "rabbitMqPassword": {
+      "value": ""
     }
   }
 }

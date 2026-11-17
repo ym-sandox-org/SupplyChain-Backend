@@ -1,36 +1,56 @@
-# =============================================================================
-# deploy.ps1 - Deploy infra/main.bicep (App Service Plan + Web App only) using
-# Azure CLI `az deployment` (NOT azd).
-#
-# IMPORTANT: Per task 002-infrastructure-bicep-appservice, this script is
-# provided for future/manual use only. It is NOT executed as part of this
-# task (provision=false). Running it requires `az login` and an existing
-# resource group.
-# =============================================================================
+<#
+.SYNOPSIS
+  Deployment script for SupplyChain Backend infrastructure (App Service Plan + Web App).
 
+.DESCRIPTION
+  REVIEW-ONLY NOTE: These Bicep files were generated for manual review as part of
+  task 001-infrastructure-bicep-appservice. Do not run this script against a
+  subscription until the generated templates have been reviewed and the MySQL /
+  RabbitMQ connection parameters have been supplied (see README.md).
+
+.PARAMETER ResourceGroupName
+  Existing resource group to deploy into.
+
+.PARAMETER ParametersFile
+  Path to the parameters JSON file (default: parameters.json in this folder).
+
+.EXAMPLE
+  ./deploy.ps1 -ResourceGroupName rg-supplychain-backend
+#>
 param(
-    [string]$ResourceGroup = "rg-supplychain-backend-demo",
-    [string]$Location = "japaneast",
-    [string]$DeploymentName = "supplychain-backend-infra-$(Get-Date -Format yyyyMMddHHmmss)"
+  [Parameter(Mandatory = $true)]
+  [string]$ResourceGroupName,
+
+  [string]$ParametersFile = "parameters.json",
+
+  [string]$Location = "japaneast"
 )
 
 $ErrorActionPreference = "Stop"
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-Write-Output "== Bicep deployment (App Service Plan + Web App only) =="
-Write-Output "Resource Group : $ResourceGroup"
-Write-Output "Location       : $Location"
-Write-Output "Deployment     : $DeploymentName"
+Write-Host "Validating Bicep template..."
+az bicep build --file main.bicep
 
-az group create `
-  --name $ResourceGroup `
-  --location $Location
+$deploymentName = "supplychain-backend-infra-$(Get-Date -Format 'yyyyMMddHHmmss')"
+
+Write-Host "Running what-if deployment preview against resource group: $ResourceGroupName"
+az deployment group what-if `
+  --resource-group $ResourceGroupName `
+  --template-file main.bicep `
+  --parameters "@$ParametersFile" `
+  --parameters location=$Location
+
+$confirm = Read-Host "Proceed with deployment? (y/N)"
+if ($confirm -ne "y" -and $confirm -ne "Y") {
+  Write-Host "Deployment cancelled."
+  exit 0
+}
 
 az deployment group create `
-  --name $DeploymentName `
-  --resource-group $ResourceGroup `
-  --template-file (Join-Path $scriptDir "main.bicep") `
-  --parameters (Join-Path $scriptDir "parameters.json")
+  --name $deploymentName `
+  --resource-group $ResourceGroupName `
+  --template-file main.bicep `
+  --parameters "@$ParametersFile" `
+  --parameters location=$Location
 
-Write-Output "Deployment complete. Query outputs with:"
-Write-Output "  az deployment group show -g $ResourceGroup -n $DeploymentName --query properties.outputs"
+Write-Host "Deployment complete. Review outputs above for the Web App host name."

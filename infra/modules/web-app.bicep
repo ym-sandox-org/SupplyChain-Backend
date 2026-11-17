@@ -1,44 +1,63 @@
-// =============================================================================
-// modules/web-app.bicep
-// Single resource: Web App (App Service), Linux, Java 21 (Java SE) runtime
+// Module: Web App (Linux, Java 21)
+// Hosts the SupplyChain Backend JAR on Azure App Service.
 //
-// NOTE: MySQL and RabbitMQ connection settings are NOT configured here.
-// This app will rely on whatever App Settings / connection details are
-// supplied out-of-band against externally hosted MySQL and RabbitMQ
-// instances. If those are not reachable/configured at runtime, the Web App
-// may fail to start or crash-loop (see README.md "Known Startup Risks").
-// =============================================================================
+// IMPORTANT — External runtime dependencies (NOT provisioned by this template):
+//   - MySQL 8.0 database (accessed via JDBC/JPA, see `mysql-connector-java`)
+//   - RabbitMQ broker (accessed via `spring-boot-starter-amqp`)
+// This module does NOT create Azure Database for MySQL, Azure Service Bus, or any
+// other managed resource for these dependencies. The app settings below are
+// placeholders only — they must be populated with a reachable MySQL and RabbitMQ
+// endpoint (self-hosted, on another Azure resource, or on-prem via VPN/ExpressRoute)
+// before/at deploy time.
+//
+// WARNING: Spring Boot's datasource and AMQP auto-configuration fail fast at startup
+// if MySQL or RabbitMQ are unreachable. If these placeholder values are left unset or
+// point to an unreachable endpoint, the Web App is expected to crash-loop and/or fail
+// App Service health checks (HTTP ping on the configured health path).
 
-@description('Name of the Web App.')
-param name string
+@description('Name of the Web App')
+param webAppName string
 
-@description('Azure region.')
+@description('Azure region for the Web App')
 param location string
 
-@description('Resource ID of the App Service Plan this Web App runs on.')
+@description('Resource ID of the App Service Plan hosting this Web App')
 param appServicePlanId string
 
-@description('Java version, e.g. 21. Used only to build the linuxFxVersion runtime stack string.')
-param javaVersion string
-
-@description('Java server type, e.g. JAVA for Java SE. Used only to build the linuxFxVersion runtime stack string.')
-param javaServer string
-
-@description('Java server version, e.g. SE. Not directly used in linuxFxVersion (Java SE format is JAVA|{version}-java{version}); retained for documentation/traceability of the requested runtime.')
-param javaServerVersion string
-
-@description('Tags to apply.')
+@description('Tags to apply to the resource')
 param tags object = {}
 
-// Linux Java SE runtime stack string, e.g. "JAVA|21-java21" for Java 21 (Java SE, no app server).
-var linuxFxVersion = '${javaServer}|${javaVersion}-java${javaVersion}'
+@description('Linux FX version for the Java runtime (Java SE 21 on this App Service Linux image)')
+param linuxFxVersion string = 'JAVA|21-java21'
 
-resource webApp 'Microsoft.Web/sites@2023-01-01' = {
-  name: name
+@description('MySQL JDBC connection string. EXTERNAL DEPENDENCY — not provisioned by this template. Must point to a reachable MySQL 8.0 instance or the app will fail to start / fail health checks.')
+@secure()
+param mysqlConnectionString string = ''
+
+@description('MySQL datasource username. EXTERNAL DEPENDENCY — not provisioned by this template.')
+param mysqlUsername string = ''
+
+@description('MySQL datasource password. EXTERNAL DEPENDENCY — not provisioned by this template.')
+@secure()
+param mysqlPassword string = ''
+
+@description('RabbitMQ host. EXTERNAL DEPENDENCY — not provisioned by this template. Must be a reachable RabbitMQ broker or the app will fail to start / fail health checks.')
+param rabbitMqHost string = ''
+
+@description('RabbitMQ port')
+param rabbitMqPort string = '5672'
+
+@description('RabbitMQ username. EXTERNAL DEPENDENCY — not provisioned by this template.')
+param rabbitMqUsername string = ''
+
+@description('RabbitMQ password. EXTERNAL DEPENDENCY — not provisioned by this template.')
+@secure()
+param rabbitMqPassword string = ''
+
+resource webApp 'Microsoft.Web/sites@2023-12-01' = {
+  name: webAppName
   location: location
-  tags: union(tags, {
-    javaServerVariant: javaServerVersion
-  })
+  tags: tags
   kind: 'app,linux'
   properties: {
     serverFarmId: appServicePlanId
@@ -46,17 +65,54 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
     siteConfig: {
       linuxFxVersion: linuxFxVersion
       alwaysOn: true
-      ftpsState: 'Disabled'
       minTlsVersion: '1.2'
+      ftpsState: 'Disabled'
+      healthCheckPath: '/actuator/health'
+      appSettings: [
+        {
+          name: 'WEBSITES_PORT'
+          value: '8080'
+        }
+        {
+          // EXTERNAL DEPENDENCY (MySQL) — placeholder, see module header comment.
+          name: 'SPRING_DATASOURCE_URL'
+          value: mysqlConnectionString
+        }
+        {
+          // EXTERNAL DEPENDENCY (MySQL) — placeholder, see module header comment.
+          name: 'SPRING_DATASOURCE_USERNAME'
+          value: mysqlUsername
+        }
+        {
+          // EXTERNAL DEPENDENCY (MySQL) — placeholder, see module header comment.
+          name: 'SPRING_DATASOURCE_PASSWORD'
+          value: mysqlPassword
+        }
+        {
+          // EXTERNAL DEPENDENCY (RabbitMQ) — placeholder, see module header comment.
+          name: 'SPRING_RABBITMQ_HOST'
+          value: rabbitMqHost
+        }
+        {
+          // EXTERNAL DEPENDENCY (RabbitMQ) — placeholder, see module header comment.
+          name: 'SPRING_RABBITMQ_PORT'
+          value: rabbitMqPort
+        }
+        {
+          // EXTERNAL DEPENDENCY (RabbitMQ) — placeholder, see module header comment.
+          name: 'SPRING_RABBITMQ_USERNAME'
+          value: rabbitMqUsername
+        }
+        {
+          // EXTERNAL DEPENDENCY (RabbitMQ) — placeholder, see module header comment.
+          name: 'SPRING_RABBITMQ_PASSWORD'
+          value: rabbitMqPassword
+        }
+      ]
     }
   }
 }
 
-@description('Resource ID of the Web App.')
 output id string = webApp.id
-
-@description('Name of the Web App.')
 output name string = webApp.name
-
-@description('Default hostname of the Web App.')
 output defaultHostName string = webApp.properties.defaultHostName

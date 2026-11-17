@@ -1,33 +1,44 @@
 #!/usr/bin/env bash
-# =============================================================================
-# deploy.sh - Deploy infra/main.bicep (App Service Plan + Web App only) using
-# Azure CLI `az deployment` (NOT azd).
+# Deployment script for SupplyChain Backend infrastructure (App Service Plan + Web App).
 #
-# IMPORTANT: Per task 002-infrastructure-bicep-appservice, this script is
-# provided for future/manual use only. It is NOT executed as part of this
-# task (provision=false). Running it requires `az login` and an existing
-# resource group.
-# =============================================================================
+# REVIEW-ONLY NOTE: These Bicep files were generated for manual review as part of
+# task 001-infrastructure-bicep-appservice. Do not run this script against a
+# subscription until the generated templates have been reviewed and the MySQL /
+# RabbitMQ connection parameters have been supplied (see README.md).
+#
+# Usage:
+#   ./deploy.sh <resourceGroupName> [parametersFile]
+#
+# Requires: az login, an existing resource group, Azure CLI >= 2.50
+
 set -euo pipefail
 
-RESOURCE_GROUP="${RESOURCE_GROUP:-rg-supplychain-backend-demo}"
-LOCATION="${LOCATION:-japaneast}"
-DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-supplychain-backend-infra-$(date +%Y%m%d%H%M%S)}"
+RESOURCE_GROUP="${1:?Usage: ./deploy.sh <resourceGroupName> [parametersFile]}"
+PARAMETERS_FILE="${2:-parameters.json}"
+LOCATION="japaneast"
+DEPLOYMENT_NAME="supplychain-backend-infra-$(date +%Y%m%d%H%M%S)"
 
-echo "== Bicep deployment (App Service Plan + Web App only) =="
-echo "Resource Group : ${RESOURCE_GROUP}"
-echo "Location       : ${LOCATION}"
-echo "Deployment     : ${DEPLOYMENT_NAME}"
+echo "Validating Bicep template..."
+az bicep build --file main.bicep
 
-az group create \
-  --name "${RESOURCE_GROUP}" \
-  --location "${LOCATION}"
+echo "Running what-if deployment preview against resource group: ${RESOURCE_GROUP}"
+az deployment group what-if \
+  --resource-group "${RESOURCE_GROUP}" \
+  --template-file main.bicep \
+  --parameters "@${PARAMETERS_FILE}" \
+  --parameters location="${LOCATION}"
+
+read -p "Proceed with deployment? (y/N) " CONFIRM
+if [[ "${CONFIRM}" != "y" && "${CONFIRM}" != "Y" ]]; then
+  echo "Deployment cancelled."
+  exit 0
+fi
 
 az deployment group create \
   --name "${DEPLOYMENT_NAME}" \
   --resource-group "${RESOURCE_GROUP}" \
-  --template-file "$(dirname "$0")/main.bicep" \
-  --parameters "$(dirname "$0")/parameters.json"
+  --template-file main.bicep \
+  --parameters "@${PARAMETERS_FILE}" \
+  --parameters location="${LOCATION}"
 
-echo "Deployment complete. Query outputs with:"
-echo "  az deployment group show -g ${RESOURCE_GROUP} -n ${DEPLOYMENT_NAME} --query properties.outputs"
+echo "Deployment complete. Review outputs above for the Web App host name."
