@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "security",
+      "id": "001-security-cve-report",
+      "description": "Scan all project dependencies for known CVEs and produce a report of findings. Report only — do not modify application code or change any dependency versions.",
+      "reason": "User explicitly requested that security issues be reported without automatic remediation, and that application code and dependency versions remain unchanged.",
+      "requirements": "Run a CVE/dependency vulnerability scan across the Maven project. For each finding, report the affected dependency, installed version, CVE id(s), severity, and the minimum version that would resolve it. Do NOT upgrade, downgrade, or otherwise modify any dependency in pom.xml, and do NOT modify any application source code. Output a CVE report file for review; no remediation is applied under this task.",
+      "environmentConfiguration": "Build tool: Maven (Maven Wrapper present in repo).",
+      "dependencies": [],
+      "successCriteria": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      },
+      "successCriteriaStatus": {
+        "passBuild": "true",
+        "passUnitTests": "true"
+      },
+      "status": "success",
+      "taskSummary": "Ran a report-only Maven CVE/dependency scan (94 dependencies, 127 vulnerabilities: 10 critical, 49 high, 52 medium, 16 low). No pom.xml or source code changes were made. Reports saved under 001-security-cve-report/ (cve-report.md, cve-report.json, final-cve-report.json). Build verified unaffected (mvn clean test: BUILD SUCCESS).",
+      "cveReport": "001-security-cve-report/final-cve-report.json"
+    },
+    {
+      "type": "infrastructure",
+      "id": "002-infrastructure-bicep-appservice",
+      "description": "Generate Bicep IaC files to host the Java 21 backend on Azure App Service, limited to an App Service Plan and a Web App resource only.",
+      "reason": "User requested Bicep configuration for Azure App Service hosting, scoped strictly to App Service Plan and Web App, with no provisioning or deployment performed.",
+      "requirements": "Generate Bicep files that define exactly two Azure resources: (1) an App Service Plan (Linux) sized appropriately for a demo/review workload, and (2) a Web App (App Service) configured for the Java 21 runtime, referencing the App Service Plan. Do NOT include MySQL, RabbitMQ, networking, Key Vault, monitoring, or any other Azure resource in the Bicep templates. Document MySQL and RabbitMQ as external dependencies that are not provisioned by this infrastructure, and include a note that the Web App may fail to start or crash-loop if those external dependencies are not reachable/configured at runtime. Do not modify application code or dependency versions as part of this task. Do not run `az deployment` or provision any Azure resources, and do not push changes to Git — output files only, for review.",
+      "environmentConfiguration": "No Azure subscription provided; IaC is generated for review only and is not deployed or provisioned.",
+      "dependencies": [],
+      "iacType": "bicep",
+      "provision": false,
+      "skills": [
+        {
+          "name": "infrastructure-bicep-generation",
+          "location": "builtin"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "planName": "azure-demo-prep",
+    "projectName": "SupplyChain Backend",
+    "language": "java",
+    "createdAt": "2026-11-17T19:57:49+09:00",
+    "version": "1.0"
+  }
+}
