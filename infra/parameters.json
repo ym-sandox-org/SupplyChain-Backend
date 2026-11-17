@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "japaneast"
+    },
+    "baseName": {
+      "value": "supplychain-backend-demo"
+    },
+    "appServicePlanSkuName": {
+      "value": "B1"
+    },
+    "appServicePlanSkuTier": {
+      "value": "Basic"
+    },
+    "javaVersion": {
+      "value": "21"
+    },
+    "javaServer": {
+      "value": "JAVA"
+    },
+    "javaServerVersion": {
+      "value": "SE"
+    },
+    "tags": {
+      "value": {
+        "environment": "demo",
+        "workload": "supplychain-backend",
+        "provisionedBy": "bicep"
+      }
+    }
+  }
+}

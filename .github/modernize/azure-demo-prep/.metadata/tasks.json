@@ -32,6 +32,8 @@
       "dependencies": [],
       "iacType": "bicep",
       "provision": false,
+      "status": "success",
+      "taskSummary": "Generated Bicep IaC under infra/ (main.bicep, modules/app-service-plan.bicep, modules/web-app.bicep, parameters.json, deploy.sh/.ps1, README.md, compliance.md) scoped strictly to an App Service Plan (Linux, B1) and a Web App (Linux, Java 21), region set to japaneast. No other resources defined. MySQL/RabbitMQ documented as external dependencies with crash-loop/health-check-failure warning. az bicep build passed with no errors/warnings. No deployment, provisioning, code changes, or git push performed.",
       "skills": [
         {
           "name": "infrastructure-bicep-generation",
