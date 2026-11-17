@@ -9,7 +9,7 @@ param appServicePlanName string
 param location string
 
 @description('App Service Plan SKU (e.g. P1v3, B1, S1)')
-param skuName string = 'P1v3'
+param skuName string = 'B1'
 
 @description('Number of worker instances')
 param capacity int = 1

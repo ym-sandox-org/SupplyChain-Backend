@@ -34,9 +34,9 @@ tooling is available, before any deployment.**
 - `ftpsState: 'Disabled'`.
 - Secrets (`mysqlConnectionString`, `mysqlPassword`, `rabbitMqPassword`) are declared
   with `@secure()` to avoid exposure in deployment logs/outputs.
-- `healthCheckPath` configured (`/actuator/health`) — note this will fail if MySQL/
-  RabbitMQ are unreachable, which is an intentional, documented risk (not a defect in
-  this template — the dependencies are out of scope).
+- No `healthCheckPath` is configured; verify an endpoint before enabling health checks.
+- Site and SCM access default to `Deny`, with SCM restrictions managed separately.
+  Later application package deployment requires a limited SCM access allow rule.
 - Resources tagged with `application`, `environment`, and `managed-by` for
   traceability.
 
@@ -49,4 +49,4 @@ tooling is available, before any deployment.**
    `appmod-get-waf-rules` for landing-zone compliance.
 3. Consider Key Vault references for the MySQL/RabbitMQ secrets instead of plain app
    settings.
-4. Confirm `P1v3` SKU sizing/cost is appropriate (see plan.md cost estimate).
+4. Confirm that the default `B1` SKU sizing and cost are appropriate.

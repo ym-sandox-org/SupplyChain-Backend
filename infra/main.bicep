@@ -8,7 +8,7 @@
 //   - Azure Service Bus (or any RabbitMQ/messaging resource)
 // MySQL and RabbitMQ are external runtime dependencies of the application. They
 // are documented, not provisioned. See the webApp module header for the
-// app-setting placeholders and the health-check failure warning.
+// app-setting placeholders and runtime dependency warning.
 
 targetScope = 'resourceGroup'
 
@@ -22,7 +22,7 @@ param appName string = 'supplychain-backend'
 param environmentName string = 'dev'
 
 @description('App Service Plan SKU')
-param appServicePlanSku string = 'P1v3'
+param appServicePlanSku string = 'B1'
 
 @description('App Service Plan instance count')
 param appServicePlanCapacity int = 1
@@ -87,6 +87,8 @@ module webApp 'modules/web-app.bicep' = {
     rabbitMqPassword: rabbitMqPassword
   }
 }
+
+
 
 output appServicePlanName string = appServicePlan.outputs.name
 output webAppName string = webApp.outputs.name

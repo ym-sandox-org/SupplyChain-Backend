@@ -12,8 +12,7 @@
 //
 // WARNING: Spring Boot's datasource and AMQP auto-configuration fail fast at startup
 // if MySQL or RabbitMQ are unreachable. If these placeholder values are left unset or
-// point to an unreachable endpoint, the Web App is expected to crash-loop and/or fail
-// App Service health checks (HTTP ping on the configured health path).
+// point to an unreachable endpoint, the Web App may fail to start or function.
 
 @description('Name of the Web App')
 param webAppName string
@@ -30,7 +29,7 @@ param tags object = {}
 @description('Linux FX version for the Java runtime (Java SE 21 on this App Service Linux image)')
 param linuxFxVersion string = 'JAVA|21-java21'
 
-@description('MySQL JDBC connection string. EXTERNAL DEPENDENCY — not provisioned by this template. Must point to a reachable MySQL 8.0 instance or the app will fail to start / fail health checks.')
+@description('MySQL JDBC connection string. EXTERNAL DEPENDENCY — not provisioned by this template. Must point to a reachable MySQL 8.0 instance.')
 @secure()
 param mysqlConnectionString string = ''
 
@@ -41,7 +40,7 @@ param mysqlUsername string = ''
 @secure()
 param mysqlPassword string = ''
 
-@description('RabbitMQ host. EXTERNAL DEPENDENCY — not provisioned by this template. Must be a reachable RabbitMQ broker or the app will fail to start / fail health checks.')
+@description('RabbitMQ host. EXTERNAL DEPENDENCY — not provisioned by this template. Must be a reachable RabbitMQ broker.')
 param rabbitMqHost string = ''
 
 @description('RabbitMQ port')
@@ -67,7 +66,9 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
       alwaysOn: true
       minTlsVersion: '1.2'
       ftpsState: 'Disabled'
-      healthCheckPath: '/actuator/health'
+      ipSecurityRestrictionsDefaultAction: 'Deny'
+      scmIpSecurityRestrictionsUseMain: false
+      scmIpSecurityRestrictionsDefaultAction: 'Deny'
       appSettings: [
         {
           name: 'WEBSITES_PORT'

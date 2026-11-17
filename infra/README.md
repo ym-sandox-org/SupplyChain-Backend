@@ -34,10 +34,14 @@ Web App (e.g. self-hosted, on another Azure subscription/VNet, or on-prem):
 
 > **⚠ Warning:** Spring Boot's datasource and AMQP auto-configuration fail fast at
 > startup if MySQL or RabbitMQ are unreachable. If the app settings above are left
-> empty or point to unreachable endpoints, the Web App is expected to **crash-loop
-> and/or fail App Service health checks** (`healthCheckPath: /actuator/health`).
+> empty or point to unreachable endpoints, the Web App may fail to start or function.
 > This is a known, documented risk from the modernization plan and is **not**
-> addressed by this template — it is out of scope.
+> addressed by this template — it is out of scope. No App Service health check path
+> is configured; add one only after verifying an endpoint.
+
+The site and SCM endpoints both default to denying access. The template does not
+configure allow rules; later application package deployment requires a separate,
+limited SCM access allow rule.
 
 ## Files
 
@@ -61,7 +65,7 @@ infra/
 | `location` | `japaneast` | Azure region for all resources |
 | `appName` | `supplychain-backend` | Base name used to build resource names |
 | `environmentName` | `dev` | Environment suffix (e.g. dev/test/prod) |
-| `appServicePlanSku` | `P1v3` | App Service Plan SKU/tier — confirm before deploying |
+| `appServicePlanSku` | `B1` | App Service Plan SKU/tier — confirm before deploying |
 | `appServicePlanCapacity` | `1` | Number of worker instances |
 | `mysqlConnectionString` | `""` (secure) | EXTERNAL DEPENDENCY — JDBC URL for a reachable MySQL 8.0 instance |
 | `mysqlUsername` | `""` | EXTERNAL DEPENDENCY — MySQL username |
@@ -89,7 +93,7 @@ All resources default to **Japan East (`japaneast`)** per the task requirements.
 ## Next steps (manual, not performed by this task)
 
 1. Review `main.bicep`, `modules/app-service-plan.bicep`, and `modules/web-app.bicep`.
-2. Decide on the final App Service Plan SKU (`P1v3` is a placeholder/example).
+2. Confirm that the default `B1` App Service Plan SKU meets the demo requirements.
 3. Supply real MySQL and RabbitMQ connection values in a parameters file (or via a
    secrets mechanism such as Key Vault references) before any deployment.
 4. If approved, run `deploy.sh` / `deploy.ps1` manually against a target resource

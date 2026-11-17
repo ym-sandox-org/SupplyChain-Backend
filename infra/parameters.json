@@ -12,7 +12,7 @@
       "value": "dev"
     },
     "appServicePlanSku": {
-      "value": "P1v3"
+      "value": "B1"
     },
     "appServicePlanCapacity": {
       "value": 1
